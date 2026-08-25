@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OUPL — Editor</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12161D;--panel:#181D26;--panel-2:#1E242F;--line:#2A313E;--line-soft:#222836;
+  --ink:#EDF1F6;--ink-2:#B4BECC;--muted:#7C8798;
+  --p25:#D1252B;--p20:#1B5FBF;--p15:#E8B400;--p10:#17915A;--p5:#DCE2EA;
+  --focus:#4B93F0;
+  --display:'Archivo Black',system-ui,sans-serif;
+  --body:'Archivo',system-ui,-apple-system,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px}
+img{display:block}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+.masthead{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#161B24,var(--bg));position:sticky;top:0;z-index:40}
+.masthead-inner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 0}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand .mark{font-family:var(--display);font-size:20px;letter-spacing:-.02em}
+.brand .full{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.13em;font-weight:600}
+.masthead a{color:var(--ink-2);font-size:13px;text-decoration:none;border-bottom:1px solid var(--line)}
+.masthead a:hover{color:var(--ink)}
+
+.step{padding:30px 0;border-bottom:1px solid var(--line-soft)}
+.step:last-child{border-bottom:0}
+.step-n{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px}
+h2{font-family:var(--display);font-size:24px;letter-spacing:-.02em;margin-bottom:6px}
+h3{font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);margin:26px 0 12px}
+.lede{color:var(--ink-2);font-size:14px;max-width:66ch;margin-bottom:20px}
+
+label{display:block;font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+input,select,textarea{font-family:var(--body);font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:9px 11px;width:100%}
+input:hover,select:hover{border-color:#3A4354}
+textarea{font-family:var(--mono);font-size:12px;line-height:1.6;resize:vertical}
+input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums}
+input[type=color]{padding:3px;height:38px;cursor:pointer}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px}
+.row>div{flex:1 1 160px;min-width:0}
+.row>div.sm{flex:0 0 108px}
+.row>div.xs{flex:0 0 84px}
+
+button{appearance:none;font-family:var(--body);font-size:13.5px;font-weight:600;cursor:pointer;border-radius:4px;padding:9px 15px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);transition:.15s}
+button:hover{border-color:#46516५}
+button:hover{border-color:#465165}
+button.primary{background:var(--p25);border-color:var(--p25);color:#fff}
+button.primary:hover{filter:brightness(1.12)}
+button.ghost{background:none;color:var(--muted)}
+button.ghost:hover{color:var(--ink)}
+button.danger{background:none;border-color:#4A2226;color:#D4737A;padding:7px 11px;font-size:12.5px}
+button.danger:hover{background:#2A1418;color:#F0949B}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;margin-bottom:16px}
+.card-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.card-head img{width:44px;height:44px;border-radius:50%}
+.card-head .t{font-weight:700;font-size:16px}
+.card-head .s{color:var(--muted);font-size:12.5px}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+.table-scroll{overflow-x:auto}
+thead th{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:0 8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th.num{text-align:right}
+tbody tr{border-bottom:1px solid var(--line-soft)}
+td{padding:6px 8px;vertical-align:middle}
+td input,td select{padding:6px 8px;font-size:13px}
+td.calc{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;color:var(--muted);font-size:12.5px;white-space:nowrap}
+td.calc .dots{color:var(--p15);font-weight:600}
+tr.counts td.calc .dots{color:var(--p15)}
+tr.counts{box-shadow:inset 3px 0 0 var(--p25)}
+tr.out td.calc{color:#6B7280}
+
+.pill{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:3px;background:var(--panel-2);color:var(--muted);border:1px solid var(--line)}
+.pill.on{background:#2A1418;border-color:#4A2226;color:#E08A91}
+
+.msg{border-left:2px solid var(--p15);background:var(--panel);padding:13px 15px;border-radius:0 4px 4px 0;font-size:13.5px;color:var(--ink-2);margin-bottom:18px}
+.msg strong{color:var(--ink)}
+.msg.warn{border-left-color:var(--p25)}
+.msg.ok{border-left-color:var(--p10)}
+.msg ul{margin:8px 0 0 18px}
+.msg li{margin-bottom:3px}
+.hint{color:var(--muted);font-size:12.5px;margin-top:6px}
+.hidden{display:none!important}
+
+.drop{border:1px dashed var(--line);border-radius:6px;padding:22px;text-align:center;color:var(--muted);font-size:13.5px;cursor:pointer;background:var(--panel)}
+.drop:hover,.drop.over{border-color:var(--focus);color:var(--ink-2)}
+.logo-preview{display:flex;align-items:center;gap:16px;margin-top:14px}
+.logo-preview img{width:76px;height:76px;border-radius:50%;background:#0B0E13}
+
+.out-area{position:relative}
+.out-area textarea{height:280px;background:#0D1117}
+.copied{position:absolute;top:10px;right:10px;font-family:var(--mono);font-size:11px;color:var(--p10);opacity:0;transition:opacity .2s}
+.copied.show{opacity:1}
+
+footer{border-top:1px solid var(--line);padding:24px 0 50px;color:var(--muted);font-size:12.5px}
+@media (max-width:700px){ .row>div{flex:1 1 100%} .row>div.sm,.row>div.xs{flex:1 1 100%} }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap"><div class="masthead-inner">
+    <div class="brand"><span class="mark">OUPL</span><span class="full">Results editor</span></div>
+    <a href="index.html">← Back to the site</a>
+  </div></div>
+</header>
+
+<main class="wrap">
+
+  <!-- 1 -->
+  <section class="step">
+    <span class="step-n">Step 1</span>
+    <h2>Who's editing?</h2>
+    <p class="lede">Pick your club to manage your own roster and details. Everything else — years, scoring rules, adding or removing schools — sits under Meet organiser.</p>
+    <div class="row">
+      <div style="flex:0 1 340px"><label for="who">Editing as</label><select id="who"></select></div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="step" id="panelPresident">
+    <span class="step-n">Step 2</span>
+    <h2 id="teamHeading">Your team</h2>
+    <p class="lede">Enter the best <em>successful</em> attempt for each lift, in kilograms. Weight class, total and DOTS are worked out as you type. A red bar on the left means that lifter is currently inside your counting five.</p>
+
+    <div class="row">
+      <div style="flex:0 1 200px"><label for="rosterYear">Year</label><select id="rosterYear"></select></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" id="teamCardHead"></div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th style="min-width:170px">Lifter</th>
+            <th style="width:78px">Sex</th>
+            <th style="width:96px">BW (kg)</th>
+            <th style="width:84px">Squat</th>
+            <th style="width:84px">Bench</th>
+            <th style="width:84px">Deadlift</th>
+            <th class="num" style="width:150px">Class / Total / DOTS</th>
+            <th style="width:44px"></th>
+          </tr></thead>
+          <tbody id="rosterBody"></tbody>
+        </table>
+      </div>
+      <div class="btn-row">
+        <button id="addLifter">+ Add lifter</button>
+        <button class="ghost" id="addFive">+ Add five rows</button>
+      </div>
+      <p class="hint" id="rosterSummary"></p>
+    </div>
+
+    <h3>Club details</h3>
+    <div class="card">
+      <div class="row">
+        <div><label for="clubName">Club name</label><input id="clubName" placeholder="Lions Strength"></div>
+        <div><label for="clubShort">Short name (used in tables)</label><input id="clubShort" placeholder="York"></div>
+        <div class="sm"><label for="clubColor">Accent colour</label><input type="color" id="clubColor"></div>
+      </div>
+      <p class="hint">The university's own name is set by the meet organiser, so it stays consistent across the site.</p>
+    </div>
+
+    <h3>Club logo</h3>
+    <div class="card">
+      <p class="lede" style="margin-bottom:16px">Drop in a square image and this crops it to a circle at the right size. Download the result, then upload it into the <code>logos</code> folder on GitHub.</p>
+      <div class="drop" id="logoDrop">Click to choose an image, or drag one here<br><span style="font-size:12px">PNG or JPG · square works best</span></div>
+      <input type="file" id="logoFile" accept="image/*" class="hidden">
+      <div class="logo-preview hidden" id="logoPreview">
+        <img id="logoImg" alt="Logo preview">
+        <div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--muted)" id="logoName"></div>
+          <div class="btn-row" style="margin-top:8px"><button id="logoDownload">Download logo</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 admin -->
+  <section class="step hidden" id="panelAdmin">
+    <span class="step-n">Step 2</span>
+    <h2>Meet setup</h2>
+    <p class="lede">These settings change how every result on the site is scored, so they should be agreed with the other presidents before you touch them.</p>
+
+    <h3>Scoring</h3>
+    <div class="card">
+      <div class="row">
+        <div style="flex:0 0 150px"><label for="countBest">Lifters counted</label><input type="number" id="countBest" min="1" max="20"></div>
+        <div><label for="requireFull">Lifter who bombs a lift</label>
+          <select id="requireFull">
+            <option value="true">Doesn't score</option>
+            <option value="false">Scores on their remaining lifts</option>
+          </select></div>
+        <div><label for="updatedTxt">"Last updated" note</label><input id="updatedTxt" placeholder="Updated after the March meet"></div>
+      </div>
+      <p class="hint">Changing the counting number re-scores every year on the site at once, including past winners.</p>
+    </div>
+
+    <h3>Meet years</h3>
+    <div class="card">
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th style="width:92px">Year</th><th style="width:150px">Date</th>
+            <th>Location</th><th style="min-width:170px">Host school</th><th style="width:44px"></th>
+          </tr></thead>
+          <tbody id="editionBody"></tbody>
+        </table>
+      </div>
+      <div class="btn-row"><button id="addEdition">+ Add a year</button></div>
+      <p class="hint">Newest first. With more than one year on file, a year picker appears on the site automatically.</p>
+    </div>
+
+    <h3>Schools</h3>
+    <div class="card">
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th style="width:110px">ID</th><th style="min-width:180px">University</th>
+            <th style="min-width:160px">Club</th><th style="width:110px">Short</th>
+            <th style="width:64px">Colour</th><th class="num" style="width:78px">Lifters</th><th style="width:44px"></th>
+          </tr></thead>
+          <tbody id="schoolBody"></tbody>
+        </table>
+      </div>
+      <div class="btn-row"><button id="addSchool">+ Add a school</button></div>
+      <p class="hint">The ID links a school to its results and its logo file, so changing one on an existing school will orphan both. Add a new school rather than renaming an old one.</p>
+    </div>
+
+    <h3>All rosters</h3>
+    <div class="card">
+      <p class="lede" style="margin-bottom:14px">Paste roster rows a president sent you. Existing rows for the same school and year are replaced.</p>
+      <textarea id="mergeBox" placeholder='{ year:"2027", lifter:"Jane Doe", school:"yorku", sex:"F", bodyweight:63.2, squat:145, bench:80, deadlift:175 },'></textarea>
+      <div class="btn-row"><button id="mergeBtn">Merge these rows</button></div>
+      <p class="hint" id="mergeMsg"></p>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="step">
+    <span class="step-n">Step 3</span>
+    <h2>Publish</h2>
+    <div id="validation"></div>
+
+    <div id="presidentPublish">
+      <p class="lede">Copy your rows and send them to the meet organiser. This is the safe option — you can't overwrite anyone else's work.</p>
+      <div class="out-area">
+        <textarea id="rowsOut" readonly style="height:180px"></textarea>
+        <span class="copied" id="copiedRows">Copied</span>
+      </div>
+      <div class="btn-row"><button class="primary" id="copyRows">Copy my rows</button></div>
+    </div>
+
+    <h3>Full data file</h3>
+    <p class="lede">If you have write access to the repository, download this and replace <code>data.js</code> on GitHub. It contains everyone's data, so only one person should be doing this at a time — otherwise whoever saves last wipes out the other's changes.</p>
+    <div class="out-area">
+      <textarea id="dataOut" readonly></textarea>
+      <span class="copied" id="copiedData">Copied</span>
+    </div>
+    <div class="btn-row">
+      <button class="primary" id="downloadData">Download data.js</button>
+      <button id="copyData">Copy to clipboard</button>
+      <button class="ghost" id="revert">Undo all my changes</button>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  <p>Nothing here is saved automatically. Changes live in this browser tab until you download the file or copy your rows — closing the tab loses them.</p>
+</div></footer>
+
+<script src="data.js"></script>
+<script>
+(function(){
+"use strict";
+var $=function(s){return document.querySelector(s);};
+var ORIGINAL=JSON.stringify(window.OUPL_DATA);
+var S=JSON.parse(ORIGINAL);
+var who="admin", rosterYear=(S.editions[0]||{}).year||"";
+var logoBlob=null, logoFilename="";
+var SERIALIZED_AT_LOAD="";
+
+/* ---------- scoring (must match index.html) ---------- */
+var DOTS_COEF={
+  M:{a:-0.000001093, b:0.0007391293, c:-0.1918759221, d:24.0900756, e:-307.75076},
+  F:{a:-0.0000010706,b:0.0005158568, c:-0.1126655495, d:13.6175032, e:-57.96288}
+};
+var DOTS_RANGE={M:[40,210],F:[40,150]};
+function dots(total,bw,sex){
+  var k=DOTS_COEF[sex]; if(!k||!total||!bw) return 0;
+  var r=DOTS_RANGE[sex]; if(bw<r[0])bw=r[0]; if(bw>r[1])bw=r[1];
+  var den=k.a*Math.pow(bw,4)+k.b*Math.pow(bw,3)+k.c*bw*bw+k.d*bw+k.e;
+  return den>0? total*500/den : 0;
+}
+var CLASSES={M:[59,66,74,83,93,105,120],F:[47,52,57,63,69,76,84]};
+function weightClass(bw,sex){
+  var a=CLASSES[sex]||CLASSES.M;
+  for(var i=0;i<a.length;i++){ if(bw<=a[i]) return String(a[i]); }
+  return a[a.length-1]+"+";
+}
+function num(v){ var n=parseFloat(v); return isFinite(n)?n:0; }
+function computed(r){
+  var sq=num(r.squat),bp=num(r.bench),dl=num(r.deadlift);
+  var bombed=S.scoring.requireFullTotal && (sq<=0||bp<=0||dl<=0);
+  var total=bombed?0:sq+bp+dl;
+  return {bombed:bombed,total:total,wc:weightClass(num(r.bodyweight),r.sex),
+          dots:bombed?0:dots(total,num(r.bodyweight),r.sex)};
+}
+function schoolById(id){ for(var i=0;i<S.schools.length;i++){ if(S.schools[i].id===id) return S.schools[i]; } return null; }
+function rosterOf(school,year){ return S.results.filter(function(r){ return r.school===school && r.year===year; }); }
+function countingSet(school,year){
+  var list=rosterOf(school,year).map(function(r){ return {r:r,c:computed(r)}; })
+    .filter(function(x){ return !x.c.bombed; })
+    .sort(function(a,b){ return b.c.dots-a.c.dots; })
+    .slice(0,S.scoring.countBestPerSchool);
+  return list.map(function(x){ return x.r; });
+}
+function esc(t){ return String(t==null?"":t).replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+/* ---------- step 1 ---------- */
+function buildWho(){
+  var sel=$("#who"); sel.innerHTML="";
+  var og=document.createElement("optgroup"); og.label="Club president";
+  S.schools.forEach(function(s){
+    var o=document.createElement("option"); o.value=s.id; o.textContent=(s.club||s.name); og.appendChild(o);
+  });
+  sel.appendChild(og);
+  var og2=document.createElement("optgroup"); og2.label="Meet organiser";
+  var o2=document.createElement("option"); o2.value="admin"; o2.textContent="Meet organiser \u2014 all settings";
+  og2.appendChild(o2); sel.appendChild(og2);
+  sel.value=who;
+}
+$("#who").addEventListener("change",function(){
+  who=this.value;
+  renderAll();
+});
+
+/* ---------- roster ---------- */
+function buildYearSelect(){
+  var sel=$("#rosterYear"), cur=rosterYear; sel.innerHTML="";
+  S.editions.forEach(function(e){
+    var o=document.createElement("option"); o.value=e.year; o.textContent=e.year; sel.appendChild(o);
+  });
+  if(!S.editions.some(function(e){return e.year===cur;})) cur=(S.editions[0]||{}).year||"";
+  rosterYear=cur; sel.value=cur;
+}
+$("#rosterYear").addEventListener("change",function(){ rosterYear=this.value; renderRoster(); renderOutputs(); });
+
+function renderTeamCard(){
+  var s=schoolById(who); if(!s) return;
+  $("#teamHeading").textContent=(s.club||s.name)+" \u2014 roster";
+  $("#teamCardHead").innerHTML=(s.logo?'<img src="'+esc(s.logo)+'" alt="" onerror="this.style.visibility=\'hidden\'">':'')+
+    '<div><div class="t">'+esc(s.club||s.name)+'</div><div class="s">'+esc(s.name)+'</div></div>';
+  $("#clubName").value=s.club||""; $("#clubShort").value=s.short||"";
+  $("#clubColor").value=(s.color&&/^#[0-9a-f]{6}$/i.test(s.color))?s.color:"#D1252B";
+  $("#logoName").textContent="logos/"+s.id+".png";
+}
+["clubName","clubShort","clubColor"].forEach(function(id){
+  $("#"+id).addEventListener("input",function(){
+    var s=schoolById(who); if(!s) return;
+    if(id==="clubName") s.club=this.value;
+    if(id==="clubShort") s.short=this.value;
+    if(id==="clubColor") s.color=this.value;
+    renderTeamCard(); renderOutputs();
+  });
+});
+
+var RENDERED=[];
+function renderRoster(){
+  if(who==="admin") return;
+  var list=rosterOf(who,rosterYear);
+  RENDERED=list;
+  var counting=countingSet(who,rosterYear);
+  var body=$("#rosterBody"); body.innerHTML="";
+
+  list.forEach(function(r){
+    var c=computed(r), counts=counting.indexOf(r)!==-1;
+    var tr=document.createElement("tr");
+    tr.className=counts?"counts":(c.bombed?"out":"");
+    tr.innerHTML=
+      '<td><input data-f="lifter" value="'+esc(r.lifter)+'" placeholder="Full name"></td>'+
+      '<td><select data-f="sex"><option value="M"'+(r.sex==="M"?" selected":"")+'>M</option>'+
+        '<option value="F"'+(r.sex==="F"?" selected":"")+'>F</option></select></td>'+
+      '<td><input data-f="bodyweight" type="number" step="0.1" value="'+esc(r.bodyweight)+'"></td>'+
+      '<td><input data-f="squat" type="number" step="0.5" value="'+esc(r.squat)+'"></td>'+
+      '<td><input data-f="bench" type="number" step="0.5" value="'+esc(r.bench)+'"></td>'+
+      '<td><input data-f="deadlift" type="number" step="0.5" value="'+esc(r.deadlift)+'"></td>'+
+      '<td class="calc">'+(c.bombed
+        ? '<span class="pill on">No total</span>'
+        : c.wc+' \u00b7 '+c.total+' \u00b7 <span class="dots">'+c.dots.toFixed(1)+'</span>')+'</td>'+
+      '<td><button class="danger" data-del="1" aria-label="Remove lifter">\u2715</button></td>';
+
+    tr.querySelectorAll("[data-f]").forEach(function(inp){
+      var ev=(inp.tagName==="SELECT")?"change":"input";
+      inp.addEventListener(ev,function(){
+        var f=inp.dataset.f;
+        r[f]=(f==="lifter"||f==="sex")?inp.value:num(inp.value);
+        refreshCalcs(); renderOutputs();
+      });
+    });
+    tr.querySelector("[data-del]").addEventListener("click",function(){
+      S.results.splice(S.results.indexOf(r),1); renderRoster(); renderOutputs();
+    });
+    body.appendChild(tr);
+  });
+
+  if(!list.length){
+    body.innerHTML='<tr><td colspan="8" style="padding:26px 8px;color:var(--muted);text-align:center">'+
+      'No lifters entered for '+esc(rosterYear)+' yet. Add your first one below.</td></tr>';
+  }
+
+  refreshCalcs();
+}
+
+/* Update only the computed cells and row highlights, so typing never
+   rebuilds the inputs underneath the cursor. */
+function refreshCalcs(){
+  var counting=countingSet(who,rosterYear);
+  var trs=$("#rosterBody").querySelectorAll("tr");
+  RENDERED.forEach(function(r,i){
+    var tr=trs[i]; if(!tr) return;
+    var c=computed(r), counts=counting.indexOf(r)!==-1;
+    tr.className=counts?"counts":(c.bombed?"out":"");
+    var cell=tr.querySelector("td.calc"); if(!cell) return;
+    cell.innerHTML=c.bombed
+      ? '<span class="pill on">No total</span>'
+      : c.wc+' \u00b7 '+c.total+' \u00b7 <span class="dots">'+c.dots.toFixed(1)+'</span>';
+  });
+  var bombs=RENDERED.filter(function(r){ return computed(r).bombed; }).length;
+  var pts=counting.reduce(function(a,r){ return a+computed(r).dots; },0);
+  $("#rosterSummary").textContent=RENDERED.length+" entered \u00b7 "+counting.length+" counting \u00b7 "+
+    bombs+" without a total \u00b7 team score "+pts.toFixed(1)+" DOTS";
+}
+function blankLifter(){
+  return {year:rosterYear,lifter:"",school:who,sex:"M",bodyweight:0,squat:0,bench:0,deadlift:0};
+}
+$("#addLifter").addEventListener("click",function(){
+  S.results.push(blankLifter()); renderRoster(); renderOutputs();
+  var inps=$("#rosterBody").querySelectorAll('[data-f="lifter"]');
+  if(inps.length) inps[inps.length-1].focus();
+});
+$("#addFive").addEventListener("click",function(){
+  for(var i=0;i<5;i++) S.results.push(blankLifter());
+  renderRoster(); renderOutputs();
+});
+
+/* ---------- logo ---------- */
+function handleLogo(file){
+  if(!file || !/^image\//.test(file.type)) return;
+  var fr=new FileReader();
+  fr.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var N=320, cv=document.createElement("canvas"); cv.width=N; cv.height=N;
+      var x=cv.getContext("2d");
+      x.save(); x.beginPath(); x.arc(N/2,N/2,N/2,0,Math.PI*2); x.clip();
+      var side=Math.min(img.width,img.height);
+      x.drawImage(img,(img.width-side)/2,(img.height-side)/2,side,side,0,0,N,N);
+      x.restore();
+      cv.toBlob(function(b){
+        logoBlob=b;
+        var s=schoolById(who); logoFilename=(s?s.id:"logo")+".png";
+        $("#logoImg").src=URL.createObjectURL(b);
+        $("#logoName").textContent="logos/"+logoFilename;
+        $("#logoPreview").classList.remove("hidden");
+      },"image/png");
+    };
+    img.src=fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+$("#logoDrop").addEventListener("click",function(){ $("#logoFile").click(); });
+$("#logoFile").addEventListener("change",function(){ handleLogo(this.files[0]); });
+["dragenter","dragover"].forEach(function(e){
+  $("#logoDrop").addEventListener(e,function(ev){ ev.preventDefault(); this.classList.add("over"); });
+});
+["dragleave","drop"].forEach(function(e){
+  $("#logoDrop").addEventListener(e,function(ev){ ev.preventDefault(); this.classList.remove("over"); });
+});
+$("#logoDrop").addEventListener("drop",function(ev){ handleLogo(ev.dataTransfer.files[0]); });
+$("#logoDownload").addEventListener("click",function(){
+  if(!logoBlob) return;
+  download(URL.createObjectURL(logoBlob), logoFilename, true);
+});
+
+/* ---------- admin: scoring ---------- */
+$("#countBest").addEventListener("input",function(){
+  var v=parseInt(this.value,10); if(v>0){ S.scoring.countBestPerSchool=v; renderAll(); }
+});
+$("#requireFull").addEventListener("change",function(){
+  S.scoring.requireFullTotal=(this.value==="true"); renderAll();
+});
+$("#updatedTxt").addEventListener("input",function(){ S.updated=this.value; renderOutputs(); });
+
+/* ---------- admin: editions ---------- */
+function renderEditions(){
+  var body=$("#editionBody"); body.innerHTML="";
+  S.editions.forEach(function(e){
+    var tr=document.createElement("tr");
+    var hostOpts=['<option value="">\u2014</option>'].concat(S.schools.map(function(s){
+      return '<option value="'+esc(s.id)+'"'+(e.host===s.id?" selected":"")+'>'+esc(s.name)+'</option>';
+    })).join("");
+    tr.innerHTML='<td><input data-f="year" value="'+esc(e.year)+'"></td>'+
+      '<td><input data-f="date" type="date" value="'+esc(e.date)+'"></td>'+
+      '<td><input data-f="location" value="'+esc(e.location)+'" placeholder="Toronto, ON"></td>'+
+      '<td><select data-f="host">'+hostOpts+'</select></td>'+
+      '<td><button class="danger" data-del="1" aria-label="Remove year">\u2715</button></td>';
+    tr.querySelectorAll("[data-f]").forEach(function(inp){
+      inp.addEventListener("change",function(){
+        var old=e.year;
+        e[inp.dataset.f]=inp.value;
+        if(inp.dataset.f==="year" && old!==inp.value){
+          S.results.forEach(function(r){ if(r.year===old) r.year=inp.value; });
+        }
+        renderAll();
+      });
+    });
+    tr.querySelector("[data-del]").addEventListener("click",function(){
+      var n=S.results.filter(function(r){ return r.year===e.year; }).length;
+      if(n && !confirm("Removing "+e.year+" also removes "+n+" result"+(n===1?"":"s")+". Continue?")) return;
+      S.results=S.results.filter(function(r){ return r.year!==e.year; });
+      S.editions.splice(S.editions.indexOf(e),1); renderAll();
+    });
+    body.appendChild(tr);
+  });
+}
+$("#addEdition").addEventListener("click",function(){
+  var y=String(new Date().getFullYear()+1);
+  while(S.editions.some(function(e){return e.year===y;})) y=String(parseInt(y,10)+1);
+  S.editions.unshift({year:y,date:"",location:"",host:""}); renderAll();
+});
+
+/* ---------- admin: schools ---------- */
+function renderSchools(){
+  var body=$("#schoolBody"); body.innerHTML="";
+  S.schools.forEach(function(s){
+    var n=S.results.filter(function(r){ return r.school===s.id; }).length;
+    var tr=document.createElement("tr");
+    tr.innerHTML='<td><input data-f="id" value="'+esc(s.id)+'"></td>'+
+      '<td><input data-f="name" value="'+esc(s.name)+'"></td>'+
+      '<td><input data-f="club" value="'+esc(s.club)+'"></td>'+
+      '<td><input data-f="short" value="'+esc(s.short)+'"></td>'+
+      '<td><input data-f="color" type="color" value="'+(/^#[0-9a-f]{6}$/i.test(s.color)?esc(s.color):"#D1252B")+'"></td>'+
+      '<td class="calc">'+n+'</td>'+
+      '<td><button class="danger" data-del="1" aria-label="Remove school">\u2715</button></td>';
+    tr.querySelectorAll("[data-f]").forEach(function(inp){
+      inp.addEventListener("change",function(){
+        var f=inp.dataset.f;
+        if(f==="id"){
+          var v=inp.value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
+          if(!v || S.schools.some(function(o){ return o!==s && o.id===v; })){
+            alert("School IDs must be unique and use letters and numbers only."); renderSchools(); return;
+          }
+          var old=s.id; s.id=v; s.logo="logos/"+v+".png";
+          S.results.forEach(function(r){ if(r.school===old) r.school=v; });
+          S.editions.forEach(function(e){ if(e.host===old) e.host=v; });
+          if(who===old) who=v;
+        } else { s[f]=inp.value; }
+        renderAll();
+      });
+    });
+    tr.querySelector("[data-del]").addEventListener("click",function(){
+      if(n && !confirm("Removing "+s.name+" also removes "+n+" result"+(n===1?"":"s")+". Continue?")) return;
+      S.results=S.results.filter(function(r){ return r.school!==s.id; });
+      S.schools.splice(S.schools.indexOf(s),1);
+      if(who===s.id) who="admin";
+      renderAll();
+    });
+    body.appendChild(tr);
+  });
+}
+$("#addSchool").addEventListener("click",function(){
+  var i=1, id="school"+i;
+  while(S.schools.some(function(s){return s.id===id;})){ i++; id="school"+i; }
+  S.schools.push({id:id,name:"New university",short:"New",club:"",color:"#D1252B",logo:"logos/"+id+".png"});
+  renderAll();
+});
+
+/* ---------- admin: merge rows ---------- */
+$("#mergeBtn").addEventListener("click",function(){
+  var txt=$("#mergeBox").value.trim();
+  if(!txt){ $("#mergeMsg").textContent="Paste some rows first."; return; }
+  var parsed;
+  try{
+    var body=txt.replace(/,\s*$/,"");
+    if(!/^\[/.test(body)) body="["+body+"]";
+    parsed=Function('"use strict";return ('+body+')')();
+  }catch(err){ $("#mergeMsg").textContent="Couldn't read that. Paste the rows exactly as the editor produced them."; return; }
+  if(!Array.isArray(parsed) || !parsed.length){ $("#mergeMsg").textContent="No rows found."; return; }
+
+  var pairs={}, bad=[];
+  parsed.forEach(function(r){
+    if(!r || !r.school || !r.year){ bad.push(r); return; }
+    if(!schoolById(r.school)){ bad.push(r); return; }
+    pairs[r.school+"|"+r.year]=1;
+  });
+  if(bad.length){ $("#mergeMsg").textContent=bad.length+" row(s) had an unknown school or missing year and were skipped."; }
+
+  var removed=0;
+  S.results=S.results.filter(function(r){
+    if(pairs[r.school+"|"+r.year]){ removed++; return false; }
+    return true;
+  });
+  var added=0;
+  parsed.forEach(function(r){
+    if(!r||!r.school||!r.year||!schoolById(r.school)) return;
+    S.results.push({year:String(r.year),lifter:String(r.lifter||""),school:r.school,
+      sex:(r.sex==="F"?"F":"M"),bodyweight:num(r.bodyweight),
+      squat:num(r.squat),bench:num(r.bench),deadlift:num(r.deadlift)});
+    added++;
+  });
+  $("#mergeBox").value="";
+  $("#mergeMsg").textContent="Replaced "+removed+" row(s) with "+added+" new one(s) across "+Object.keys(pairs).length+" school/year group(s).";
+  renderAll();
+});
+
+/* ---------- validation ---------- */
+function validate(){
+  var errs=[], warns=[];
+  var seen={};
+  S.results.forEach(function(r){
+    var label=(r.lifter||"(unnamed)")+" \u2014 "+(schoolById(r.school)||{}).short+" "+r.year;
+    if(!String(r.lifter||"").trim()) errs.push("A lifter row has no name ("+(schoolById(r.school)||{}).short+", "+r.year+")");
+    var k=(r.lifter||"").trim().toLowerCase()+"|"+r.school+"|"+r.year;
+    if(k.charAt(0)!=="|"){ if(seen[k]) errs.push("Two rows for "+label); seen[k]=1; }
+    var bw=num(r.bodyweight);
+    if(bw<=0) errs.push("No bodyweight for "+label);
+    else{
+      var rg=DOTS_RANGE[r.sex]||DOTS_RANGE.M;
+      if(bw<rg[0]||bw>rg[1]) warns.push(label+" is "+bw+" kg, outside the range DOTS is defined for ("+rg[0]+"\u2013"+rg[1]+" kg)");
+    }
+    ["squat","bench","deadlift"].forEach(function(f){
+      if(num(r[f])<0) errs.push("Negative "+f+" for "+label);
+    });
+    if(!S.editions.some(function(e){ return e.year===r.year; })) errs.push(label+" is in a year that isn't set up");
+  });
+  S.schools.forEach(function(s){
+    if(!String(s.name||"").trim()) errs.push("A school has no university name");
+    if(!String(s.club||"").trim()) warns.push((s.name||s.id)+" has no club name set");
+  });
+  S.editions.forEach(function(e){ if(!e.date) warns.push(e.year+" has no date set"); });
+
+  var box=$("#validation"); box.innerHTML="";
+  if(errs.length){
+    box.innerHTML+='<div class="msg warn"><strong>'+errs.length+' thing'+(errs.length===1?"":"s")+
+      ' to fix before publishing.</strong><ul>'+errs.slice(0,12).map(function(t){return "<li>"+esc(t)+"</li>";}).join("")+
+      (errs.length>12?'<li>and '+(errs.length-12)+' more</li>':'')+'</ul></div>';
+  }
+  if(warns.length){
+    box.innerHTML+='<div class="msg"><strong>Worth a look.</strong><ul>'+
+      warns.slice(0,8).map(function(t){return "<li>"+esc(t)+"</li>";}).join("")+
+      (warns.length>8?'<li>and '+(warns.length-8)+' more</li>':'')+'</ul></div>';
+  }
+  if(!errs.length && !warns.length){
+    box.innerHTML='<div class="msg ok"><strong>Everything checks out.</strong> '+
+      S.results.length+' results across '+S.schools.length+' schools and '+S.editions.length+' year'+
+      (S.editions.length===1?"":"s")+'.</div>';
+  }
+}
+
+/* ---------- serialise ---------- */
+function q(v){ return JSON.stringify(v==null?"":String(v)); }
+function rowLine(r){
+  return '    { year:'+q(r.year)+', lifter:'+q(r.lifter)+', school:'+q(r.school)+
+         ', sex:'+q(r.sex)+', bodyweight:'+num(r.bodyweight)+
+         ', squat:'+num(r.squat)+', bench:'+num(r.bench)+', deadlift:'+num(r.deadlift)+' }';
+}
+function serialize(){
+  var out=[];
+  out.push("/* OUPL data — generated by the editor. Safe to hand-edit.");
+  out.push("   Format: one meet a year, classic only, best "+S.scoring.countBestPerSchool+" lifters per school by DOTS. */");
+  out.push("");
+  out.push("window.OUPL_DATA = {");
+  out.push("  updated: "+q(S.updated)+",");
+  out.push("");
+  out.push("  scoring: { countBestPerSchool: "+S.scoring.countBestPerSchool+
+           ", requireFullTotal: "+(S.scoring.requireFullTotal?"true":"false")+" },");
+  out.push("");
+  out.push("  schools: [");
+  out.push(S.schools.map(function(s){
+    return '    { id:'+q(s.id)+', name:'+q(s.name)+', short:'+q(s.short)+
+           ', club:'+q(s.club)+', color:'+q(s.color)+', logo:'+q(s.logo||("logos/"+s.id+".png"))+' }';
+  }).join(",\n"));
+  out.push("  ],");
+  out.push("");
+  out.push("  editions: [");
+  out.push(S.editions.map(function(e){
+    return '    { year:'+q(e.year)+', date:'+q(e.date)+', location:'+q(e.location)+', host:'+q(e.host)+' }';
+  }).join(",\n"));
+  out.push("  ],");
+  out.push("");
+  out.push("  results: [");
+
+  var chunks=[];
+  S.editions.forEach(function(e){
+    S.schools.forEach(function(s){
+      var rows=S.results.filter(function(r){ return r.year===e.year && r.school===s.id; });
+      if(rows.length) chunks.push(rows.map(rowLine).join(",\n"));
+    });
+  });
+  var orphans=S.results.filter(function(r){
+    return !S.editions.some(function(e){return e.year===r.year;}) || !schoolById(r.school);
+  });
+  if(orphans.length) chunks.push(orphans.map(rowLine).join(",\n"));
+
+  out.push(chunks.join(",\n\n"));
+  out.push("  ]");
+  out.push("};");
+  return out.join("\n");
+}
+function myRows(){
+  var rows=S.results.filter(function(r){ return r.school===who && r.year===rosterYear; });
+  if(!rows.length) return "(no lifters entered yet)";
+  return rows.map(rowLine).map(function(l){ return l.replace(/^ {4}/,""); }).join(",\n")+",";
+}
+
+/* ---------- outputs ---------- */
+function renderOutputs(){
+  validate();
+  $("#dataOut").value=serialize();
+  if(who!=="admin") $("#rowsOut").value=myRows();
+}
+function download(href,name,isURL){
+  var a=document.createElement("a");
+  a.href=isURL?href:URL.createObjectURL(new Blob([href],{type:"text/javascript"}));
+  a.download=name; document.body.appendChild(a); a.click(); a.remove();
+}
+$("#downloadData").addEventListener("click",function(){ download(serialize(),"data.js",false); });
+function copyFrom(el,flag){
+  var t=$(el); t.select(); t.setSelectionRange(0,t.value.length);
+  var done=function(){ var f=$(flag); f.classList.add("show"); setTimeout(function(){ f.classList.remove("show"); },1400); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t.value).then(done,function(){ document.execCommand("copy"); done(); }); }
+  else { document.execCommand("copy"); done(); }
+}
+$("#copyData").addEventListener("click",function(){ copyFrom("#dataOut","#copiedData"); });
+$("#copyRows").addEventListener("click",function(){ copyFrom("#rowsOut","#copiedRows"); });
+$("#revert").addEventListener("click",function(){
+  if(!confirm("Throw away every change you've made in this tab?")) return;
+  S=JSON.parse(ORIGINAL); who="admin"; rosterYear=(S.editions[0]||{}).year||"";
+  renderAll();
+});
+window.addEventListener("beforeunload",function(e){
+  if(serialize()===SERIALIZED_AT_LOAD) return;
+  e.preventDefault(); e.returnValue="";
+});
+
+/* ---------- render everything ---------- */
+function applyMode(){
+  var admin=(who==="admin");
+  $("#panelAdmin").classList.toggle("hidden",!admin);
+  $("#panelPresident").classList.toggle("hidden",admin);
+  $("#presidentPublish").classList.toggle("hidden",admin);
+}
+function renderAll(){
+  buildWho(); $("#who").value=who; applyMode();
+  buildYearSelect();
+  $("#countBest").value=S.scoring.countBestPerSchool;
+  $("#requireFull").value=S.scoring.requireFullTotal?"true":"false";
+  $("#updatedTxt").value=S.updated||"";
+  renderEditions(); renderSchools();
+  if(who!=="admin"){ renderTeamCard(); renderRoster(); }
+  renderOutputs();
+}
+
+renderAll();
+SERIALIZED_AT_LOAD=serialize();
+})();
+</script>
+</body>
+</html>
