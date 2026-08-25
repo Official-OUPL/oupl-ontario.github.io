@@ -7,7 +7,7 @@ window.OUPL_DATA = {
   scoring: { countBestPerSchool: 5, requireFullTotal: true },
 
   schools: [
-    { id:"yorku", name:"York University", short:"York", club:"Lions Strength", color:"#E31837", logo:"logos/yorku.png" },
+    { id:"yorku", name:"York University", short:"York", club:"Lions Strength", color:"#E31837", logo:"file:///Users/avi/Downloads/yorku.png" },
     { id:"uoft", name:"University of Toronto", short:"Toronto", club:"U of T Powerlifting", color:"#2E4A8C", logo:"logos/uoft.png" },
     { id:"waterloo", name:"University of Waterloo", short:"Waterloo", club:"Waterloo Warriors Strength", color:"#F5C518", logo:"logos/waterloo.png" },
     { id:"mcmaster", name:"McMaster University", short:"McMaster", club:"McMaster Barbell", color:"#9B1B4E", logo:"logos/mcmaster.png" },
