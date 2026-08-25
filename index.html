@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OUPL — Strongest School</title>
+<meta name="description" content="Strongest School results for Ontario university powerlifting clubs. Top five lifters per school by DOTS.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12161D;
+  --panel:#181D26;
+  --panel-2:#1E242F;
+  --line:#2A313E;
+  --line-soft:#222836;
+  --ink:#EDF1F6;
+  --ink-2:#B4BECC;
+  --muted:#7C8798;
+
+  /* IPF plate colours — the data palette */
+  --p25:#D1252B;
+  --p20:#1B5FBF;
+  --p15:#E8B400;
+  --p10:#17915A;
+  --p5:#DCE2EA;
+
+  --focus:#4B93F0;
+
+  --display:'Archivo Black', system-ui, sans-serif;
+  --body:'Archivo', system-ui, -apple-system, sans-serif;
+  --mono:'IBM Plex Mono', ui-monospace, monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px}
+img{display:block}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* ---------- header ---------- */
+.masthead{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#161B24 0%,var(--bg) 100%);position:sticky;top:0;z-index:40;backdrop-filter:blur(6px)}
+.masthead-inner{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 0}
+.brand{display:flex;align-items:baseline;gap:11px;margin-right:auto}
+.brand .mark{font-family:var(--display);font-size:22px;letter-spacing:-.02em}
+.brand .full{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.13em;font-weight:600}
+.year-pick{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink-2);border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:5px 9px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{appearance:none;background:none;border:0;cursor:pointer;font-family:var(--body);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:13px 16px;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s}
+.tab:hover{color:var(--ink-2)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--p25)}
+
+/* ---------- champion block ---------- */
+.champ{padding:40px 0 34px;border-bottom:1px solid var(--line-soft)}
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);display:block;margin-bottom:16px}
+.champ-grid{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,.85fr);gap:32px;align-items:center}
+.champ-logo{width:132px;height:132px;border-radius:50%;flex:none}
+.champ-title{font-family:var(--display);font-size:clamp(30px,5vw,50px);line-height:.95;letter-spacing:-.03em}
+.champ-club{margin-top:10px;color:var(--ink-2);font-size:14px}
+.champ-score{font-family:var(--mono);font-size:clamp(28px,4.4vw,42px);font-weight:600;letter-spacing:-.02em;line-height:1;margin-top:18px}
+.champ-score .unit{font-size:12px;color:var(--muted);font-weight:500;margin-left:9px;letter-spacing:.06em}
+.chasers{display:flex;flex-direction:column;gap:9px}
+.chaser{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--ink-2)}
+.chaser .pos{font-family:var(--mono);color:var(--muted);width:18px;font-size:12px}
+.chaser img{width:22px;height:22px;border-radius:50%;flex:none}
+.chaser .gap{margin-left:auto;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+
+/* ---------- plate bar (signature) ---------- */
+.sleeve{display:flex;align-items:center;gap:2px;height:26px}
+.sleeve .bar{height:2px;background:var(--line);flex:none;width:6px;border-radius:1px}
+.plate{border-radius:1px;flex:none;animation:load .45s cubic-bezier(.2,.8,.3,1) backwards}
+@keyframes load{from{transform:scaleY(.2);opacity:0}to{transform:scaleY(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.plate{animation:none}}
+
+/* ---------- tables ---------- */
+.section{padding:28px 0 60px}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{font-family:var(--mono);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);text-align:left;padding:0 12px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th.num{text-align:right}
+thead th.sortable{cursor:pointer;user-select:none}
+thead th.sortable:hover{color:var(--ink-2)}
+thead th[aria-sort]{color:var(--ink)}
+tbody tr{border-bottom:1px solid var(--line-soft)}
+tbody tr:hover{background:var(--panel)}
+td{padding:11px 12px;vertical-align:middle}
+td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13.5px}
+td.rank{font-family:var(--mono);color:var(--muted);font-size:13px;width:44px}
+td.strong{font-weight:600}
+.top3 td.rank{color:var(--p25);font-weight:600}
+tr.scored td.rank{box-shadow:inset 3px 0 0 var(--p25)}
+.school-cell{display:flex;align-items:center;gap:11px;min-width:0}
+.school-cell img{width:30px;height:30px;border-radius:50%;flex:none}
+.school-cell .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.school-cell .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub{color:var(--muted);font-size:12px}
+.breakdown{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.02em;margin-top:3px}
+.dots{color:var(--p15);font-weight:600}
+
+/* ---------- controls ---------- */
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+.field{position:relative;display:flex;align-items:center}
+select,input[type="search"]{appearance:none;font-family:var(--body);font-size:13px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 30px 8px 11px;cursor:pointer}
+input[type="search"]{padding-right:11px;cursor:text;min-width:180px}
+select:hover{border-color:#3A4354}
+.field::after{content:"";position:absolute;right:12px;pointer-events:none;width:5px;height:5px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:translateY(-2px) rotate(45deg)}
+.field.no-caret::after{display:none}
+.seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--panel)}
+.seg button{appearance:none;background:none;border:0;cursor:pointer;font-family:var(--body);font-size:12.5px;font-weight:600;color:var(--muted);padding:8px 14px;transition:.15s}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button:hover{color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--panel-2);color:var(--ink)}
+.count{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+/* ---------- clubs / history ---------- */
+.club-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1px}
+.club{background:var(--bg);padding:20px;display:flex;gap:14px;align-items:center;box-shadow:0 0 0 1px var(--line-soft)}
+.club img{width:54px;height:54px;border-radius:50%;flex:none}
+.club .cn{font-weight:600;font-size:14.5px}
+.club .un{color:var(--muted);font-size:12.5px;margin-top:2px}
+.history{display:grid;gap:1px;background:var(--line-soft);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.hrow{background:var(--bg);padding:18px 14px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.hrow .yr{font-family:var(--display);font-size:22px;letter-spacing:-.02em;width:78px;flex:none}
+.hrow img{width:38px;height:38px;border-radius:50%;flex:none}
+.hrow .who{font-weight:600}
+.hrow .where{color:var(--muted);font-size:12.5px}
+.hrow .pts{margin-left:auto;font-family:var(--mono);font-size:14px;font-weight:600}
+
+.note{border-left:2px solid var(--p15);background:var(--panel);padding:14px 16px;border-radius:0 4px 4px 0;font-size:13.5px;color:var(--ink-2);margin-bottom:26px}
+.note strong{color:var(--ink)}
+.empty{padding:56px 12px;text-align:center;color:var(--muted);font-size:14px}
+footer{border-top:1px solid var(--line);padding:26px 0 46px;color:var(--muted);font-size:12.5px}
+footer .legend{display:flex;gap:15px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+footer .legend span{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px}
+footer .legend i{width:4px;height:15px;border-radius:1px;display:block}
+footer p+p{margin-top:8px}
+
+@media (max-width:860px){
+  .champ-grid{grid-template-columns:auto minmax(0,1fr);gap:20px}
+  .chasers{grid-column:1/-1}
+  .champ-logo{width:92px;height:92px}
+  .hide-sm{display:none}
+  .count{margin-left:0;width:100%}
+  .hrow .pts{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="masthead-inner">
+      <div class="brand">
+        <span class="mark">OUPL</span>
+        <span class="full">Ontario University Powerlifting</span>
+      </div>
+      <select class="year-pick" id="yearPick" aria-label="Choose year" hidden></select>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" role="tab" data-view="school"  aria-selected="true">Strongest school</button>
+      <button class="tab" role="tab" data-view="lifters" aria-selected="false">Lifters</button>
+      <button class="tab" role="tab" data-view="clubs"   aria-selected="false">Clubs</button>
+      <button class="tab" role="tab" data-view="history" aria-selected="false">Past winners</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section id="view-school">
+    <div class="champ" id="champBlock"></div>
+    <div class="wrap section">
+      <div class="controls"><span class="count" id="teamCount"></span></div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:46px">#</th>
+              <th>School</th>
+              <th style="width:126px" class="hide-sm">Load</th>
+              <th class="num hide-sm">Entered</th>
+              <th class="num hide-sm">Counting</th>
+              <th class="num">Team DOTS</th>
+            </tr>
+          </thead>
+          <tbody id="teamBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-lifters" hidden>
+    <div class="wrap section">
+      <div class="controls">
+        <div class="seg" role="group" aria-label="Filter by sex">
+          <button data-lsex="all" aria-pressed="true">All</button>
+          <button data-lsex="M" aria-pressed="false">Men</button>
+          <button data-lsex="F" aria-pressed="false">Women</button>
+        </div>
+        <div class="field"><select id="fSchool"><option value="all">All schools</option></select></div>
+        <div class="field"><select id="fClass"><option value="all">All weight classes</option></select></div>
+        <div class="field no-caret"><input type="search" id="fSearch" placeholder="Search lifter" aria-label="Search lifter"></div>
+        <span class="count" id="lifterCount"></span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:46px">#</th>
+              <th class="sortable" data-sort="lifter">Lifter</th>
+              <th class="hide-sm">School</th>
+              <th class="num" style="width:56px">Class</th>
+              <th class="num hide-sm sortable" data-sort="bodyweight">BW</th>
+              <th class="num hide-sm sortable" data-sort="squat">SQ</th>
+              <th class="num hide-sm sortable" data-sort="bench">BP</th>
+              <th class="num hide-sm sortable" data-sort="deadlift">DL</th>
+              <th class="num sortable" data-sort="total">Total</th>
+              <th class="num sortable" data-sort="dots" aria-sort="descending">DOTS</th>
+            </tr>
+          </thead>
+          <tbody id="lifterBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-clubs" hidden>
+    <div class="wrap section">
+      <div class="note">Seven clubs currently compete for Strongest School. If your university has a powerlifting club and wants in, contact any of the presidents below.</div>
+      <div class="club-grid" id="clubGrid"></div>
+    </div>
+  </section>
+
+  <section id="view-history" hidden>
+    <div class="wrap section">
+      <div class="history" id="historyList"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="legend" aria-hidden="true">
+      <span><i style="background:var(--p25)"></i>25</span>
+      <span><i style="background:var(--p20)"></i>20</span>
+      <span><i style="background:var(--p15)"></i>15</span>
+      <span><i style="background:var(--p10)"></i>10</span>
+      <span><i style="background:var(--p5)"></i>5</span>
+      <span style="color:var(--muted);font-family:var(--body);letter-spacing:0">Load bars use IPF plate colours.</span>
+    </div>
+    <p>Strongest School is decided on a single meet. Each school's best five lifters by DOTS have their scores added together, and the highest team total wins. Classic (raw) only. A red mark beside a lifter's rank means their score counted toward their school's total.</p>
+    <p>Weight classes are assigned from bodyweight at weigh-in. Club logos are the property of their respective clubs.</p>
+    <p id="footNote" style="margin-top:14px"></p>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  "use strict";
+  var D = window.OUPL_DATA;
+  var $ = function(s){ return document.querySelector(s); };
+
+  /* ---------- DOTS ----------
+     DOTS = total * 500 / (a*bw^4 + b*bw^3 + c*bw^2 + d*bw + e)
+     Verify these against a published source before the meet —
+     every ranking on this site depends on them. */
+  var DOTS_COEF = {
+    M:{ a:-0.000001093,   b:0.0007391293, c:-0.1918759221, d:24.0900756, e:-307.75076 },
+    F:{ a:-0.0000010706,  b:0.0005158568, c:-0.1126655495, d:13.6175032, e:-57.96288  }
+  };
+  var DOTS_RANGE = { M:[40,210], F:[40,150] };
+  function dots(total, bw, sex){
+    var k = DOTS_COEF[sex]; if(!k || !total || !bw) return 0;
+    var r = DOTS_RANGE[sex];
+    if(bw < r[0]) bw = r[0];
+    if(bw > r[1]) bw = r[1];
+    var den = k.a*Math.pow(bw,4) + k.b*Math.pow(bw,3) + k.c*bw*bw + k.d*bw + k.e;
+    return den > 0 ? total * 500 / den : 0;
+  }
+
+  /* ---------- IPF weight classes ---------- */
+  var CLASSES = { M:[59,66,74,83,93,105,120], F:[47,52,57,63,69,76,84] };
+  function weightClass(bw, sex){
+    var arr = CLASSES[sex] || CLASSES.M;
+    for(var i=0;i<arr.length;i++){ if(bw <= arr[i]) return String(arr[i]); }
+    return arr[arr.length-1] + "+";
+  }
+
+  var schoolById = {};
+  D.schools.forEach(function(s){ schoolById[s.id] = s; });
+  var YEARS = D.editions.map(function(e){ return e.year; });
+  var year = YEARS[0] || "";
+
+  var allRows = D.results.map(function(r){
+    var sq=r.squat||0, bp=r.bench||0, dl=r.deadlift||0;
+    var bombed = D.scoring.requireFullTotal && (sq<=0 || bp<=0 || dl<=0);
+    var total = bombed ? 0 : sq+bp+dl;
+    return { year:r.year, lifter:r.lifter, school:r.school, sex:r.sex,
+             bodyweight:r.bodyweight, squat:sq, bench:bp, deadlift:dl,
+             total:total, bombed:bombed, wc:weightClass(r.bodyweight,r.sex),
+             dots: bombed ? 0 : dots(total, r.bodyweight, r.sex), scored:false };
+  });
+
+  function rowsFor(y){ return allRows.filter(function(r){ return r.year === y; }); }
+
+  /* Flag which lifters actually count, then aggregate by school. */
+  function standings(y){
+    var rows = rowsFor(y);
+    rows.forEach(function(r){ r.scored = false; });
+    var by = {};
+    rows.forEach(function(r){ (by[r.school] = by[r.school] || []).push(r); });
+    return Object.keys(by).map(function(id){
+      var all = by[id];
+      var elig = all.filter(function(r){ return !r.bombed; })
+                    .sort(function(a,b){ return b.dots - a.dots; });
+      var counting = elig.slice(0, D.scoring.countBestPerSchool);
+      counting.forEach(function(r){ r.scored = true; });
+      return { id:id, entered:all.length, counting:counting.length,
+               points: counting.reduce(function(s,r){ return s + r.dots; }, 0),
+               scores: counting.map(function(r){ return r.dots; }) };
+    }).sort(function(a,b){ return b.points - a.points; });
+  }
+
+  /* ---------- the signature: a loaded sleeve ---------- */
+  var PLATES = [
+    { kg:25,  c:"var(--p25)", w:7,   h:26 },
+    { kg:20,  c:"var(--p20)", w:6,   h:24 },
+    { kg:15,  c:"var(--p15)", w:5,   h:22 },
+    { kg:10,  c:"var(--p10)", w:4.5, h:19 },
+    { kg:5,   c:"var(--p5)",  w:3.5, h:13 },
+    { kg:2.5, c:"var(--p25)", w:3,   h:10 }
+  ];
+  function sleeve(value, max, capKg){
+    var remain = (value / max) * (capKg || 260);
+    var out = '<span class="sleeve"><span class="bar"></span>', i = 0;
+    PLATES.forEach(function(p){
+      var n = Math.floor(remain / p.kg);
+      if(p.kg === 2.5) n = Math.min(n, 1);
+      remain -= n * p.kg;
+      for(var k=0;k<n;k++,i++){
+        out += '<span class="plate" style="width:'+p.w+'px;height:'+p.h+'px;background:'+p.c+';animation-delay:'+(i*20)+'ms"></span>';
+      }
+    });
+    if(i === 0) out += '<span class="plate" style="width:3px;height:9px;background:var(--p5);opacity:.5"></span>';
+    return out + '<span class="bar"></span></span>';
+  }
+
+  function esc(t){ return String(t).replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function n1(x){ return x.toFixed(1); }
+  function nm(id){ var s=schoolById[id]; return s?s.name:id; }
+  function shortNm(id){ var s=schoolById[id]; return s?s.short:id; }
+  function badge(id, px){
+    var s = schoolById[id] || {};
+    if(s.logo) return '<img src="'+esc(s.logo)+'" alt="" width="'+px+'" height="'+px+'" style="width:'+px+'px;height:'+px+'px">';
+    return '<span class="dot" style="background:'+(s.color||"#555")+'"></span>';
+  }
+  function editionFor(y){
+    for(var i=0;i<D.editions.length;i++){ if(D.editions[i].year === y) return D.editions[i]; }
+    return {};
+  }
+  function prettyDate(d){
+    var x = new Date(d + "T12:00:00");
+    return isNaN(x) ? d : x.toLocaleDateString("en-CA",{month:"long",day:"numeric",year:"numeric"});
+  }
+
+  /* ---------- render: strongest school ---------- */
+  function renderSchool(){
+    var st = standings(year), ed = editionFor(year), block = $("#champBlock");
+
+    if(!st.length){
+      block.innerHTML = '<div class="wrap"><span class="eyebrow">Strongest School '+esc(year)+'</span>'+
+        '<p style="color:var(--muted)">No results posted yet. Add this year\u2019s lifters to <code>data.js</code> and the standings appear here.</p></div>';
+      $("#teamBody").innerHTML = '<tr><td colspan="6" class="empty">No results posted yet.</td></tr>';
+      $("#teamCount").textContent = "";
+      return;
+    }
+
+    var top = st[0], s = schoolById[top.id] || {};
+    var chasers = st.slice(1,5).map(function(t,i){
+      return '<div class="chaser"><span class="pos">'+(i+2)+'</span>'+badge(t.id,22)+
+             '<span>'+esc(nm(t.id))+'</span><span class="gap">\u2212'+n1(top.points-t.points)+'</span></div>';
+    }).join("");
+
+    block.innerHTML = '<div class="wrap"><span class="eyebrow">Strongest School \u00b7 '+esc(year)+
+      (ed.date? ' \u00b7 '+esc(prettyDate(ed.date)) : '')+(ed.location? ' \u00b7 '+esc(ed.location):'')+'</span>'+
+      '<div class="champ-grid">'+
+        (s.logo? '<img class="champ-logo" src="'+esc(s.logo)+'" alt="'+esc(s.club||nm(top.id))+' logo">' : '<span></span>')+
+        '<div><h1 class="champ-title">'+esc(nm(top.id))+'</h1>'+
+        '<div class="champ-club">'+esc(s.club||'')+' \u00b7 '+top.counting+' scoring lifters of '+top.entered+' entered</div>'+
+        '<div class="champ-score">'+n1(top.points)+'<span class="unit">TEAM DOTS</span></div></div>'+
+        '<div class="chasers">'+chasers+'</div>'+
+      '</div></div>';
+
+    var max = top.points;
+    $("#teamBody").innerHTML = st.map(function(t,i){
+      var sc = schoolById[t.id] || {};
+      return '<tr'+(i<3?' class="top3"':'')+'>'+
+        '<td class="rank">'+(i+1)+'</td>'+
+        '<td><span class="school-cell">'+badge(t.id,30)+'<span style="min-width:0">'+
+          '<span class="nm strong">'+esc(nm(t.id))+'</span>'+
+          '<div class="breakdown">'+t.scores.map(n1).join('  \u00b7  ')+'</div>'+
+        '</span></span></td>'+
+        '<td class="hide-sm">'+sleeve(t.points,max)+'</td>'+
+        '<td class="num hide-sm">'+t.entered+'</td>'+
+        '<td class="num hide-sm">'+t.counting+'</td>'+
+        '<td class="num strong">'+n1(t.points)+'</td>'+
+      '</tr>';
+    }).join("");
+
+    $("#teamCount").textContent = st.length+" schools \u00b7 best "+D.scoring.countBestPerSchool+" lifters count";
+  }
+
+  /* ---------- render: lifters ---------- */
+  var lifterSex="all", sortKey="dots", sortDir=-1;
+  function renderLifters(){
+    standings(year); // refresh the `scored` flags for this year
+    var school=$("#fSchool").value, wc=$("#fClass").value, q=$("#fSearch").value.trim().toLowerCase();
+
+    var list = rowsFor(year).filter(function(r){
+      if(lifterSex!=="all" && r.sex!==lifterSex) return false;
+      if(school!=="all" && r.school!==school) return false;
+      if(wc!=="all" && r.wc!==wc) return false;
+      if(q && r.lifter.toLowerCase().indexOf(q)===-1) return false;
+      return true;
+    });
+
+    list.sort(function(a,b){
+      var x=a[sortKey], y=b[sortKey];
+      if(typeof x==="string") return sortDir*x.localeCompare(y);
+      return sortDir*(x-y);
+    });
+
+    $("#lifterBody").innerHTML = list.length ? list.map(function(r,i){
+      var cls = [];
+      if(i<3 && sortKey==="dots" && sortDir===-1) cls.push("top3");
+      if(r.scored) cls.push("scored");
+      return '<tr'+(cls.length?' class="'+cls.join(" ")+'"':'')+'>'+
+        '<td class="rank">'+(i+1)+'</td>'+
+        '<td class="strong">'+esc(r.lifter)+'</td>'+
+        '<td class="hide-sm"><span class="school-cell">'+badge(r.school,24)+'<span class="nm">'+esc(shortNm(r.school))+'</span></span></td>'+
+        '<td class="num">'+r.wc+'</td>'+
+        '<td class="num hide-sm sub">'+n1(r.bodyweight)+'</td>'+
+        '<td class="num hide-sm">'+r.squat+'</td>'+
+        '<td class="num hide-sm">'+r.bench+'</td>'+
+        '<td class="num hide-sm">'+r.deadlift+'</td>'+
+        '<td class="num strong">'+(r.bombed?'\u2014':r.total)+'</td>'+
+        '<td class="num dots">'+(r.bombed?'\u2014':n1(r.dots))+'</td>'+
+      '</tr>';
+    }).join("") : '<tr><td colspan="10" class="empty">No lifters match these filters. Clear the search or pick a different school.</td></tr>';
+
+    var scoring = list.filter(function(r){ return r.scored; }).length;
+    $("#lifterCount").textContent = list.length+" lifter"+(list.length===1?"":"s")+" \u00b7 "+scoring+" scoring";
+  }
+
+  /* ---------- render: clubs ---------- */
+  function renderClubs(){
+    $("#clubGrid").innerHTML = D.schools.map(function(s){
+      return '<div class="club">'+badge(s.id,54)+
+        '<div><div class="cn">'+esc(s.club||s.name)+'</div><div class="un">'+esc(s.name)+'</div></div></div>';
+    }).join("");
+  }
+
+  /* ---------- render: past winners ---------- */
+  function renderHistory(){
+    var done = D.editions.filter(function(e){ return rowsFor(e.year).length; });
+    if(!done.length){
+      $("#historyList").innerHTML = '<div class="hrow"><span class="empty" style="padding:20px 0">No meets completed yet. The first winner shows up here once results are posted.</span></div>';
+      return;
+    }
+    $("#historyList").innerHTML = done.map(function(e){
+      var st = standings(e.year), w = st[0], s = schoolById[w.id] || {};
+      return '<div class="hrow"><span class="yr">'+esc(e.year)+'</span>'+badge(w.id,38)+
+        '<span><span class="who">'+esc(nm(w.id))+'</span><div class="where">'+
+        esc(s.club||'')+(e.location? ' \u00b7 '+esc(e.location):'')+'</div></span>'+
+        '<span class="pts">'+n1(w.points)+' <span style="color:var(--muted);font-weight:400">DOTS</span></span></div>';
+    }).join("");
+    standings(year);
+  }
+
+  /* ---------- wiring ---------- */
+  function populate(){
+    $("#footNote").textContent = "Last updated: " + D.updated;
+
+    var yp = $("#yearPick");
+    if(YEARS.length > 1){
+      yp.hidden = false;
+      YEARS.forEach(function(y){
+        var o=document.createElement("option"); o.value=y; o.textContent=y; yp.appendChild(o);
+      });
+      yp.value = year;
+      yp.addEventListener("change", function(){
+        year = yp.value; renderSchool(); renderLifters();
+      });
+    }
+
+    var sel=$("#fSchool");
+    D.schools.slice().sort(function(a,b){ return a.name.localeCompare(b.name); }).forEach(function(s){
+      var o=document.createElement("option"); o.value=s.id; o.textContent=s.name; sel.appendChild(o);
+    });
+    var seen={}, wcs=[];
+    allRows.forEach(function(r){ if(!seen[r.wc]){ seen[r.wc]=1; wcs.push(r.wc); } });
+    wcs.sort(function(a,b){ return parseFloat(a)-parseFloat(b); }).forEach(function(v){
+      var o=document.createElement("option"); o.value=v; o.textContent=v+" kg"; $("#fClass").appendChild(o);
+    });
+  }
+
+  function showView(v){
+    ["school","lifters","clubs","history"].forEach(function(k){ $("#view-"+k).hidden = (k!==v); });
+    document.querySelectorAll(".tab").forEach(function(b){ b.setAttribute("aria-selected", String(b.dataset.view===v)); });
+    window.scrollTo({top:0,behavior:"instant"});
+  }
+
+  document.querySelectorAll(".tab").forEach(function(b){
+    b.addEventListener("click", function(){ showView(b.dataset.view); });
+  });
+  document.querySelectorAll("[data-lsex]").forEach(function(b){
+    b.addEventListener("click", function(){
+      lifterSex=b.dataset.lsex;
+      document.querySelectorAll("[data-lsex]").forEach(function(x){ x.setAttribute("aria-pressed", String(x===b)); });
+      renderLifters();
+    });
+  });
+  ["#fSchool","#fClass"].forEach(function(s){ $(s).addEventListener("change", renderLifters); });
+  $("#fSearch").addEventListener("input", renderLifters);
+  document.querySelectorAll("th.sortable").forEach(function(th){
+    th.addEventListener("click", function(){
+      var k=th.dataset.sort;
+      if(sortKey===k){ sortDir=-sortDir; } else { sortKey=k; sortDir=(k==="lifter")?1:-1; }
+      document.querySelectorAll("th.sortable").forEach(function(x){ x.removeAttribute("aria-sort"); });
+      th.setAttribute("aria-sort", sortDir===-1?"descending":"ascending");
+      renderLifters();
+    });
+  });
+
+  populate();
+  renderSchool();
+  renderLifters();
+  renderClubs();
+  renderHistory();
+})();
+</script>
+</body>
+</html>
